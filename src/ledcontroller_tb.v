@@ -35,8 +35,6 @@ module ledcontroller_tb;
 		
 	always #20 clk_i  = ~clk_i;
 	
-	//always #I2CHALFCYCLE scl_i = ~scl_i;
-	
 	task start();
 		begin
 			scl_i = 1'b1;
