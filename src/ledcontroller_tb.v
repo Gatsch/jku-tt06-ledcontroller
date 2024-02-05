@@ -88,6 +88,9 @@ module ledcontroller_tb;
 		#I2CCYCLE;
 		i2cwrite(8'h84);
 		
+		
+		stop();
+		
 		#I2CCYCLE;
 		i2cwrite(8'hD0);
 		#I2CCYCLE;

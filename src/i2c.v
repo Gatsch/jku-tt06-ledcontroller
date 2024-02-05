@@ -17,34 +17,38 @@
 `define __i2c__
 
 module i2c #(
-	parameter ADDRESS = 7'h69
+	parameter ADDRESS = 7'h69	//default i2c address
 )(
-	input wire scl_i,
-	output wire scl_o,	//needed?
-	input wire sda_i,
-	output wire sda_o,
-	input wire clk,
-	input wire reset,
-	output reg [7:0] address,
-	output reg [7:0] data,
-	output wire address_valid_o,
-	output wire data_valid_o,
-	output wire start,
-	output wire stop
+	input wire scl_i,			//scl input
+	output wire scl_o,			//scl output (technically not implemented)
+	input wire sda_i,			//sda input
+	output wire sda_o,			//sda output
+	input wire clk,				//internal clock
+	input wire reset,			//chip reset
+	output reg [7:0] address,	//register address spcified by i2c command
+	output reg [7:0] data,		//i2c data
+	output wire address_valid_o,//valid strobe for register address
+	output wire data_valid_o,	//valid strobe for data
+	output wire start,			//i2c start signal
+	output wire stop			//i2c stop signal
 );
 
 	reg scl;
 	reg last_scl;
+	//generates edges from a delayed register
 	wire scl_posedge = scl & ~last_scl;
 	wire scl_negedge = ~scl & last_scl;
 	reg scl_out;
 	
 	reg sda;
 	reg last_sda;
+	//generates edges from a delayed register
 	wire sda_posedge = sda & ~last_sda;
 	wire sda_negedge = ~sda & last_sda;
 	reg sda_out;
 	
+	//generates the start and stop signals from the edges
+	//and states of the input signals according to i2c
 	wire start_signal = scl_i & sda_negedge;
 	wire stop_signal = scl_i & sda_posedge;
 	
@@ -56,7 +60,7 @@ module i2c #(
 	reg deviceaddressread;
 	reg address_valid;
 	
-	
+	//states are defined as localparam to increas readabilty
 	localparam IDLE = 3'd0;
 	localparam READADDRESS = 3'd1;
 	localparam PREPACK = 3'd2;
@@ -64,10 +68,10 @@ module i2c #(
 	localparam WRITE = 3'd4;
 	reg [2:0] state, next_state;
 
+	//the registers are updated each clock cylce with their new values
 	always @(posedge clk) begin
 		if (reset) begin
 			state <= IDLE;
-            
         end else begin
         	scl <= scl_i;
         	sda <= sda_i;
@@ -77,6 +81,7 @@ module i2c #(
         end
     end
     
+    //
 	always @(state, start_signal, stop_signal, scl_posedge, scl_negedge) begin
 		if (start_signal) begin
 			data_cnt <= 4'b0000;
@@ -98,32 +103,6 @@ module i2c #(
 					scl_out <= 1'b1;
 					next_state <= IDLE;
 				end
-				/*READADDRESS: begin
-					if (data_cnt < Data_size-1) begin
-						if (scl_posedge) begin
-							data <= data<<1;
-							data[0] <= sda;
-							data_cnt <= data_cnt + 4'b0001;
-						end
-						next_state <= READADDRESS;
-					end else begin
-						next_state <= READORWRITE;
-					end
-				end
-				READORWRITE: begin
-					if (scl_posedge) begin
-						read <= sda;
-						data[Data_size-1] <= 0;
-						if (data[Data_size-2:0] == ADDRESS) begin
-							data_cnt <= 4'b0;
-							next_state <= PREPACK;
-						end else begin
-							next_state <= IDLE;
-						end
-					end else begin
-						next_state <= READORWRITE;
-					end
-				end*/
 				READADDRESS: begin
 					if (data_cnt < Data_size) begin
 						if (scl_posedge) begin
@@ -146,38 +125,6 @@ module i2c #(
 						next_state <= PREPACK;
 					end
 				end
-				/*
-				READDEVICEADDRESS: begin
-					if (data_cnt < Data_size) begin
-						if (scl_posedge) begin
-							data <= data<<1;
-							data[0] <= sda;
-							data_cnt <= data_cnt + 4'b0001;
-						end
-						next_state <= READDEVICEADDRESS;
-					end else if (data[Data_size-1:1] == ADDRESS) begin
-						read <= data[0];
-						data_cnt <= 4'b0;
-						next_state <= PREPACK;
-					end else begin
-						next_state <= IDLE;
-					end
-				end
-				READREGISTERADDRESS: begin
-					if (data_cnt < Data_size) begin
-						if (scl_posedge) begin
-							data <= data<<1;
-							data[0] <= sda;
-							data_cnt <= data_cnt + 4'b0001;
-						end
-						next_state <= READREGISTERADDRESS;
-					end else begin
-						dataaddressread <= 1'b1;
-						address <= data;
-						next_state <= PREPACK;
-					end
-				end
-				*/
 				PREPACK: begin
 						if (scl_negedge) begin
 							sda_out <= 1'b0;
@@ -216,12 +163,6 @@ module i2c #(
 						next_state <= PREPACK;
 					end
 				end
-				/*
-				ADDRESSINCREMENT: begin
-					address <= address + 8'b1;
-					next_state <= PREPACK;
-				end
-				*/
 				default:
 		    		next_state <= IDLE;
 			endcase
