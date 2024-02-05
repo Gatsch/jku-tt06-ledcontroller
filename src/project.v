@@ -28,7 +28,7 @@ module tt_um_ledcontroller_Gatsch (
     input  wire       rst_n     // reset_n - low to reset
 );
 
-  wire reset = ! rst_n;
+ 	wire reset = ! rst_n;
 	wire sda_o;
 	wire sda_i = uio_in[1];
 	wire scl_o;

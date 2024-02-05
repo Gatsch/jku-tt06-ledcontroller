@@ -81,8 +81,9 @@ module i2c #(
         end
     end
     
-    //
 	always @(state, start_signal, stop_signal, scl_posedge, scl_negedge) begin
+		//if a start signal occurs everything is set to its default value
+		//and the read process can begin
 		if (start_signal) begin
 			data_cnt <= 4'b0000;
 			data_valid <= 1'b0;
@@ -92,10 +93,12 @@ module i2c #(
 			deviceaddressread <= 1'b0;
 			address_valid <= 1'b0;
 			next_state <= READADDRESS;
+		//if a stop signal occurs the module switches to the IDLE state and waits
 		end else if (stop_signal) begin
 			next_state <= IDLE;
 		end else begin
 			case(state)
+				//waits for a start condition to occur
 				IDLE: begin
 					data_cnt <= 4'b0000;
 					data_valid <= 1'b0;
@@ -103,6 +106,10 @@ module i2c #(
 					scl_out <= 1'b1;
 					next_state <= IDLE;
 				end
+				//reads the device address from the i2c bus and compares it with
+				//the configured address
+				//if it matches a acknowledgement is sent
+				//this state also manges the register address
 				READADDRESS: begin
 					if (data_cnt < Data_size) begin
 						if (scl_posedge) begin
@@ -125,6 +132,7 @@ module i2c #(
 						next_state <= PREPACK;
 					end
 				end
+				//prepeares the acknowledge by setting the right output values
 				PREPACK: begin
 						if (scl_negedge) begin
 							sda_out <= 1'b0;
@@ -135,6 +143,7 @@ module i2c #(
 						end
 					
 				end
+				//acknowledges a sent byte then returns to the next state
 				ACK: begin
 					if (scl_negedge) begin
 						sda_out <= 1'b1;
@@ -150,6 +159,7 @@ module i2c #(
 						next_state <= ACK;
 					end
 				end
+				//allows data to be read from the bus and saves it in a register
 				WRITE: begin
 					if (data_cnt < Data_size) begin
 						if (scl_posedge) begin

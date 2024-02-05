@@ -33,9 +33,9 @@ pinout:
   ui[7]: ""
 
   # Outputs
-  uo[0]: ""
-  uo[1]: ""
-  uo[2]: ""
+  uo[0]: "i2c SCL alternative for PNP open collector"
+  uo[1]: "i2c SDA alternative for PNP open collector"
+  uo[2]: "ws2812b LED output"
   uo[3]: ""
   uo[4]: ""
   uo[5]: ""
@@ -43,8 +43,8 @@ pinout:
   uo[7]: ""
 
   # Bidirectional pins
-  uio[0]: ""
-  uio[1]: ""
+  uio[0]: "i2c SCL"
+  uio[1]: "i2c SDA"
   uio[2]: ""
   uio[3]: ""
   uio[4]: ""
