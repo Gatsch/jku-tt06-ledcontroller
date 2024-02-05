@@ -49,12 +49,12 @@ module tt_um_ledcontroller_Gatsch (
     wire dummy2 = |uio_in[7:2];
     /* verilator lint_on UNUSEDSIGNAL */
     
-    i2c_led 
+    ledcontroller 
 		#(
 		.ADDRESS(7'h4A),
 		.LED_CNT(11)
 		)
-		i2c_led_dut (
+		ledcontroller (
 			.scl_i(scl_i),
 			.scl_o(scl_o),
 			.sda_i(sda_i),

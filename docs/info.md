@@ -9,12 +9,23 @@ You can also include images in this folder and reference them in the markdown. E
 
 ## How it works
 
-Explain how your project works
+This tinytapeout projects implements i2c to drive ws2812b individual addressable LEDs. The IC can be addressed with the address 0x4A. The register addresss corrosponds with the 
+
+|address | data   |
+|--------|--------|
+|  0x00  | green0 |
+|  0x01  | red0   |
+|  0x02  | blue0  |
+|  0x03  | green1 |
+|  0x04  | red1   |
+|  0x05  | blue1  |
+|  0x06  | green2 |
+| ...    | ...    |
 
 ## How to test
 
-Explain how to use your project
+Connect 
 
 ## External hardware
 
-List external hardware used in your project (e.g. PMOD, LED display, etc), if any
+Microntroller/computer (e.g. STM32, Arduino, Raspberry Pi, ...), ws2812b LED (strip, matrix, ...), external pullup resistors for i2c

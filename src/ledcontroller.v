@@ -20,23 +20,30 @@ module ledcontroller #(
 
 	
 	localparam DATAWIDTH = LED_CNT*3*8;
-//	localparam DATAWIDTH = DATAWIDTH32[$clog2(DATAWIDTH32)-1:0];
-	localparam DATACOUNTWIDTH32 = $clog2(LED_CNT*3);
-	localparam DATACOUNTWIDTH = DATACOUNTWIDTH32[DATACOUNTWIDTH32:0];
+	localparam DATAADDRESSWIDTH = $clog2(DATAWIDTH);
+	localparam DATACOUNT32 = LED_CNT*3;
+	localparam DATACOUNTWIDTH = $clog2(DATACOUNT32);
+	localparam DATACOUNT = DATACOUNT32[DATACOUNTWIDTH-1:0];
 
+	wire start;
+	wire stop;
 	wire [7:0] data;
 	wire [7:0] address;
 	wire data_valid;
-	wire start;
-	wire stop;
+	wire address_valid;
 	reg [DATAWIDTH-1:0]leddata;
 	
 	
 	localparam IDLE = 2'd0;
-	localparam WAIT = 2'd1;
+	localparam WAIT_ADDRESS = 2'd1;
 	localparam WRITE = 2'd2;
 	reg [1:0] state, next_state;
 	reg [DATACOUNTWIDTH-1:0] datacounter, next_datacounter;
+	
+    /* verilator lint_off UNUSEDSIGNAL */
+	wire [7:DATACOUNTWIDTH] dummy = address[7:DATACOUNTWIDTH];
+    /* verilator lint_on UNUSEDSIGNAL */
+    
 	integer i;
 	
 	
@@ -51,6 +58,7 @@ module ledcontroller #(
 			.reset(reset),
 			.address(address),
 			.data(data),
+			.address_valid_o(address_valid),
 			.data_valid_o(data_valid),
 			.start(start),
 			.stop(stop)
@@ -81,33 +89,41 @@ module ledcontroller #(
 		
 	end
 	
-	always @(state, start, stop, data_valid) begin
+	always @(state, start, stop, address_valid, data_valid) begin
 		next_state <= state;
 		next_datacounter <= datacounter;
 		
 		case (state) 
 			IDLE: begin
 				if (start) begin
-					next_datacounter <= address[DATACOUNTWIDTH-1:0];//{(DATACOUNTWIDTH){1'b0}};
-					next_state <= WRITE;
+					next_state <= WAIT_ADDRESS;
 				end else begin
 					next_state <= IDLE;
 				end
 			end
+			WAIT_ADDRESS: begin
+				if (address_valid) begin
+					next_datacounter <= address[DATACOUNTWIDTH-1:0];
+					next_state <= WRITE;
+				end else begin
+					next_state <= WAIT_ADDRESS;
+				end
+			end
 			WRITE: begin
 				if (data_valid) begin
-					if (datacounter < DATAWIDTH) begin
+					if (datacounter < DATACOUNT) begin
 						for(i=0;i<8;i=i+1) begin
-							leddata[(datacounter<<3)+i[DATACOUNTWIDTH-1:0]] <= data[7-i];
+							leddata[({3'b0,datacounter}<<3)+i[DATAADDRESSWIDTH-1:0]] <= data[7-i];
 						end
 						next_datacounter <= datacounter + 1;
 						next_state <= WRITE;
 					end else begin
 						next_state <= IDLE;
 					end
-				end else if (stop) begin
-					next_state <= IDLE;
 				end
+			end
+			default: begin
+				next_state <= IDLE;
 			end
 		endcase
 		

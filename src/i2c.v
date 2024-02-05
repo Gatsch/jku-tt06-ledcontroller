@@ -27,6 +27,7 @@ module i2c #(
 	input wire reset,
 	output reg [7:0] address,
 	output reg [7:0] data,
+	output wire address_valid_o,
 	output wire data_valid_o,
 	output wire start,
 	output wire stop
@@ -53,7 +54,7 @@ module i2c #(
 	reg data_valid;
 	reg read;
 	reg deviceaddressread;
-	reg regaddressread;
+	reg address_valid;
 	
 	
 	localparam IDLE = 3'd0;
@@ -61,7 +62,6 @@ module i2c #(
 	localparam PREPACK = 3'd2;
 	localparam ACK = 3'd3;
 	localparam WRITE = 3'd4;
-	localparam ADDRESSINCREMENT = 3'd5;
 	reg [2:0] state, next_state;
 
 	always @(posedge clk) begin
@@ -85,7 +85,7 @@ module i2c #(
 			scl_out <= 1'b1;
 			address <= 8'b0;
 			deviceaddressread <= 1'b0;
-			regaddressread <= 1'b0;
+			address_valid <= 1'b0;
 			next_state <= READADDRESS;
 		end else if (stop_signal) begin
 			next_state <= IDLE;
@@ -142,7 +142,7 @@ module i2c #(
 						end
 					end else begin
 						address <= data;
-						regaddressread <= 1'b1;
+						address_valid <= 1'b1;
 						next_state <= PREPACK;
 					end
 				end
@@ -192,7 +192,7 @@ module i2c #(
 					if (scl_negedge) begin
 						sda_out <= 1'b1;
 						data_cnt <= 4'b0;
-						if (!regaddressread) begin
+						if (!address_valid) begin
 							next_state <= READADDRESS;
 						end else if (read) begin
 							next_state <= IDLE;
@@ -232,6 +232,7 @@ module i2c #(
     assign sda_o = sda_out;
     assign scl_o = scl_out;
     assign data_valid_o = data_valid;
+    assign address_valid_o = address_valid;
     assign start = start_signal;
     assign stop = stop_signal;
 endmodule

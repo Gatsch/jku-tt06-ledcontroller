@@ -25,8 +25,7 @@ module i2c_tb;
 	wire sda_o;
 	wire [7:0] data;
 	wire data_valid;
-	wire start;
-	wire stop;
+	wire address_valid;
 	
 	localparam I2CCYCLE = 10000;
 	localparam I2CHALFCYCLE = I2CCYCLE/2;
@@ -42,8 +41,7 @@ module i2c_tb;
 			.reset(rst_i),
 			.data(data),
 			.data_valid_o(data_valid),
-			.start(start),
-			.stop(stop)
+			.address_valid_o(address_valid)
 		);
 		
 	always #20 clk_i  = ~clk_i;
