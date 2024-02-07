@@ -60,7 +60,7 @@ module i2c #(
 	reg deviceaddressread;
 	reg address_valid;
 	
-	//states are defined as localparam to increas readabilty
+	//states are defined as localparam to increase readabilty
 	localparam IDLE = 3'd0;
 	localparam READADDRESS = 3'd1;
 	localparam PREPACK = 3'd2;
@@ -112,21 +112,21 @@ module i2c #(
 				//this state also manges the register address
 				READADDRESS: begin
 					if (data_cnt < Data_size) begin
-						if (scl_posedge) begin
-							data <= data<<1;
-							data[0] <= sda;
+						if (scl_posedge) begin		//data is valid
+							data <= data<<1;		//shift previous bits
+							data[0] <= sda;			//read new bit from sda
 							data_cnt <= data_cnt + 4'b0001;
 						end
 						next_state <= READADDRESS;
 					end else if (!deviceaddressread) begin
-						if (data[Data_size-1:1] == ADDRESS) begin
+						if (data[Data_size-1:1] == ADDRESS) begin //correct address
 							read <= data[0];
 							deviceaddressread <= 1'b1;
 							next_state <= PREPACK;
 						end else begin
 							next_state <= IDLE;
 						end
-					end else begin
+					end else begin					//register address was read
 						address <= data;
 						address_valid <= 1'b1;
 						next_state <= PREPACK;
@@ -134,7 +134,7 @@ module i2c #(
 				end
 				//prepeares the acknowledge by setting the right output values
 				PREPACK: begin
-						if (scl_negedge) begin
+						if (scl_negedge) begin	//sda has to be low when scl goes high
 							sda_out <= 1'b0;
 							data_valid <= 1'b0;
 							next_state <= ACK;
@@ -148,7 +148,7 @@ module i2c #(
 					if (scl_negedge) begin
 						sda_out <= 1'b1;
 						data_cnt <= 4'b0;
-						if (!address_valid) begin
+						if (!address_valid) begin	//ACK is used for ever case
 							next_state <= READADDRESS;
 						end else if (read) begin
 							next_state <= IDLE;

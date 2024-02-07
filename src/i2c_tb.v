@@ -46,6 +46,7 @@ module i2c_tb;
 		
 	always #20 clk_i  = ~clk_i;
 	
+	//i2c start condition
 	task start();
 		begin
 			scl_i = 1'b1;
@@ -55,6 +56,7 @@ module i2c_tb;
 		end
 	endtask
 	
+	//i2c data transmit
 	task i2cwrite(input [7:0] i2cdata);
 		begin
 			scl_i = 1'b0;
@@ -69,6 +71,7 @@ module i2c_tb;
 		end
 	endtask
 	
+	//i2c stop condition
 	task stop();
 		begin
 			scl_i = 1'b1;
@@ -89,10 +92,13 @@ module i2c_tb;
 		start();
 		#I2CCYCLE;
 		
+		//address write mode
 		i2cwrite({7'h4A,1'b0});
 		#I2CCYCLE;
+		//register address
 		i2cwrite(8'h00);
 		
+		//first 3 bytes
 		#I2CCYCLE;
 		i2cwrite(8'hAB);
 		#I2CCYCLE;
@@ -100,6 +106,7 @@ module i2c_tb;
 		#I2CCYCLE;
 		i2cwrite(8'h84);
 		
+		//second 3 bytes
 		#I2CCYCLE;
 		i2cwrite(8'hD0);
 		#I2CCYCLE;
@@ -107,6 +114,7 @@ module i2c_tb;
 		#I2CCYCLE;
 		i2cwrite(8'h5A);
 		
+		//third 3 bytes
 		#I2CCYCLE;
 		i2cwrite(8'h00);
 		#I2CCYCLE;

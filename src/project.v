@@ -52,7 +52,7 @@ module tt_um_ledcontroller_Gatsch (
     ledcontroller 
 		#(
 		.ADDRESS(7'h4A),
-		.LED_CNT(11)
+		.LED_CNT(10)
 		)
 		ledcontroller (
 			.scl_i(scl_i),
