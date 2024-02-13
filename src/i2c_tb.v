@@ -27,8 +27,12 @@ module i2c_tb;
 	wire data_valid;
 	wire address_valid;
 	
+	integer i;
+	
 	localparam I2CCYCLE = 10000;
 	localparam I2CHALFCYCLE = I2CCYCLE/2;
+	localparam I2C2CYCLE = I2CCYCLE/2;
+	localparam I2C4CYCLE = I2CCYCLE/4;
 	
 	i2c 
 		#(.ADDRESS(7'h4A))
@@ -74,17 +78,16 @@ module i2c_tb;
 	//i2c stop condition
 	task stop();
 		begin
-			scl_i = 1'b1;
-			sda_i = 1'b0;
+			scl_i = 1'b0;
+			#I2C4CYCLE sda_i = 1'b0;
+			#I2C4CYCLE scl_i = 1'b1;
 			#I2C4CYCLE sda_i = 1'b1;
-			#I2C4CYCLE scl_i = 1'b0;
 		end
 	endtask
 	
 	initial begin 
 		$dumpfile("tb.vcd");
 		$dumpvars;
-		i2c_led_dut.leddata = 0;
 		
 		#50 rst_i = 1'b1;
 		#50 rst_i = 1'b0;
@@ -121,7 +124,29 @@ module i2c_tb;
 		i2cwrite(8'h77);
 		#I2CCYCLE;
 		i2cwrite(8'h0D);
+		
+		#I2CCYCLE;
 		stop();
+		
+		#(I2CCYCLE*5);
+		
+		//new communication
+		start();
+		#I2CCYCLE;
+		i2cwrite({7'h4A,1'b0});
+		#I2CCYCLE;
+		i2cwrite(8'h01);
+		#I2CCYCLE;
+		i2cwrite(8'hAB);
+		#I2CCYCLE;
+		start();
+		scl_i = 1'b0;
+		#I2C4CYCLE sda_i = 1'b1;
+		#I2C4CYCLE scl_i = 1'b1;
+		#I2C2CYCLE scl_i = 1'b0;
+		#I2C4CYCLE sda_i = 1'b0;
+		#I2C4CYCLE scl_i = 1'b1;
+		#I2C4CYCLE sda_i = 1'b1;
 		
 		#200000 $finish;
 	end

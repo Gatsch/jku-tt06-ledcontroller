@@ -94,6 +94,7 @@ module ledcontroller #(
 		if (reset) begin
 			state <= 0;
 			datacounter <= 0;
+			leddata <= {DATACOUNTWIDTH{1'b0}};
 		end else begin
 			state <= next_state;
 			datacounter <= next_datacounter;

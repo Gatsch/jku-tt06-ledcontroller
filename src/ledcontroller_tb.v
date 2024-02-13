@@ -74,10 +74,10 @@ module ledcontroller_tb;
 	
 	task stop();
 		begin
-			scl_i = 1'b1;
-			sda_i = 1'b0;
+			scl_i = 1'b0;
+			#I2C4CYCLE sda_i = 1'b0;
+			#I2C4CYCLE scl_i = 1'b1;
 			#I2C4CYCLE sda_i = 1'b1;
-			#I2C4CYCLE scl_i = 1'b0;
 		end
 	endtask
 	
