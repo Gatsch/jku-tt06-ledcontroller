@@ -84,7 +84,7 @@ module ledcontroller_tb;
 	initial begin 
 		$dumpfile("tb.vcd");
 		$dumpvars;
-		
+		ledcontroller.leddata <= 0;
 		#50 rst_i = 1'b1;
 		#50 rst_i = 1'b0;
 		
@@ -93,7 +93,7 @@ module ledcontroller_tb;
 		
 		i2cwrite({7'h4A,1'b0});
 		#I2CCYCLE;
-		i2cwrite(8'h03);
+		i2cwrite(8'h01);
 		
 		#I2CCYCLE;
 		i2cwrite(8'hAB);
@@ -110,11 +110,6 @@ module ledcontroller_tb;
 		i2cwrite(8'h5A);
 		
 		#I2CCYCLE;
-		i2cwrite(8'h00);
-		#I2CCYCLE;
-		i2cwrite(8'h77);
-		#I2CCYCLE;
-		i2cwrite(8'h0D);
 		stop();
 		
 		#200000 $finish;
